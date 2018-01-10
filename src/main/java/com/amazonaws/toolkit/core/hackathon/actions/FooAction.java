@@ -23,7 +23,7 @@ public class FooAction extends BaseAction<FooInput, ActionOutput, ActionExceptio
     }
 
     @Override
-    public ActionOutput doExecute(FooInput input, ActionContext context) throws ActionException {
+    protected ActionOutput doExecute(FooInput input, ActionContext context) throws ActionException {
         ToolkitEvent metrics = context.getEvent();
         ToolkitProgresser progresser = context.getProgresser();
         ToolkitLogger logger = context.getLogger();

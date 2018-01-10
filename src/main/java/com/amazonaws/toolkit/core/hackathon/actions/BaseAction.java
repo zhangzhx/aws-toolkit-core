@@ -22,7 +22,7 @@ public abstract class BaseAction<I extends ActionInput, O extends ActionOutput, 
         this.metrics = EventPublisherProvider.INSTANCE.getEventPublisher().createEvent(actionInfo.getName());
     }
 
-    public O execute() throws E {
+    public final O execute() throws E {
         I input = contextProvider.createActionInput();
         ActionContext context = createActionContext();
         try {
