@@ -19,10 +19,10 @@ public class NoOpEventPublisher extends EventPublisher {
     @Override
     public ToolkitEvent createEvent(String eventName) {
         return new ToolkitEvent(eventName, this) {
-//            @Override
-//            protected boolean isValid() {
-//                return false;
-//            }
+            @Override
+            protected boolean isValid() {
+                return false;
+            }
 
             @Override
             protected Object convertEvent() {

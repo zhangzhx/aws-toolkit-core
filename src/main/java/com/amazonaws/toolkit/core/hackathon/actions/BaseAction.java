@@ -30,9 +30,7 @@ public abstract class BaseAction<I extends ActionInput, O extends ActionOutput, 
             O output = doExecute(input, context);
             long time = System.currentTimeMillis() - startTimeMilli;
             metrics.addMetric("Execution time milli", time);
-            if (output.isSucceeded()) {
-                metrics.addAttribute("Result", output.getResult().name());
-            }
+            metrics.addAttribute("Result", output.getResult().name());
             return output;
         } catch (ActionException e) {
             metrics.addAttribute("Result", ActionOutput.ActionResult.FAILED.name());
