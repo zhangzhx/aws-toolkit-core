@@ -16,7 +16,7 @@ public abstract class BaseAction<I extends ActionInput, O extends ActionOutput, 
         this.actionInfo = actionInfo;
     }
 
-    public O execute(I input, ActionContext context) throws E {
+    public final O execute(I input, ActionContext context) throws E {
         ToolkitEvent metrics = context.getEvent();
         try {
             long startTimeMilli = System.currentTimeMillis();
