@@ -37,7 +37,7 @@ public class FooAction extends BaseAction<FooInput, ActionOutput, ActionExceptio
             try {
                 Thread.sleep(1000);
                 logger.info("I have slept for %d seconds in project %s.\n", i+1, input.getProjectName());
-                if (new Random().nextInt(12) == 1) {
+                if (new Random().nextInt(20) == 1) {
                     throw new ActionException("Random assertion failed!", null);
                 }
                 progresser.workedFraction(0.1 * (i + 1));
