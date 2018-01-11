@@ -2,11 +2,15 @@ package com.amazonaws.toolkit.core.hackathon.actions;
 
 import java.io.File;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.transfer.Transfer.TransferState;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -16,8 +20,8 @@ import com.amazonaws.toolkit.core.hackathon.ToolkitLogger;
 import com.amazonaws.toolkit.core.hackathon.ToolkitProgresser;
 import com.amazonaws.toolkit.core.hackathon.models.ActionException;
 import com.amazonaws.toolkit.core.hackathon.models.ActionOutput;
-import com.amazonaws.toolkit.core.hackathon.models.UploadToS3Input;
 import com.amazonaws.toolkit.core.hackathon.models.ActionOutput.ActionResult;
+import com.amazonaws.toolkit.core.hackathon.models.UploadToS3Input;
 
 public class UploadToS3Action extends BaseAction<UploadToS3Input, ActionOutput, ActionException> {
     private static final String INVALID_PARAMETER_ERROR_MESSAGE = "Invalid parameter";
@@ -53,23 +57,40 @@ public class UploadToS3Action extends BaseAction<UploadToS3Input, ActionOutput, 
                 .withS3Client(s3)
                 .build();
         boolean bucketExists = s3.doesBucketExistV2(input.getBucketName());
+        context.getEvent().addBooleanMetric("Bucket exists", bucketExists);
         if (!bucketExists) {
             logger.warning("Target bucket %s doesn't exist, create one...\n", input.getBucketName());
             s3.createBucket(new CreateBucketRequest(input.getBucketName()));
         }
-        Upload upload = tm.upload(new PutObjectRequest(input.getBucketName(), input.getKeyPrefix(), sourceFile));
         ToolkitProgresser progresser = context.getProgresser();
         progresser.beginTask("Uploading to Amazon S3");
-        while (!upload.isDone()) {
-            try {
-                Thread.sleep(50L);
-            } catch (InterruptedException e) {
-                // Do nothing
+
+        Upload upload = tm.upload(new PutObjectRequest(input.getBucketName(), input.getKeyPrefix(), sourceFile));
+        upload.addProgressListener(new ProgressListener() {
+            @Override
+            public void progressChanged(ProgressEvent e) {
+                TransferState state = upload.getState();
+                if (state == TransferState.InProgress) {
+                    progresser.workedFraction(upload.getProgress().getPercentTransferred()/100);
+                }
             }
-            progresser.workedFraction(upload.getProgress().getPercentTransferred()/100);
+        });
+        try {
+            upload.waitForCompletion();
+        } catch (AmazonClientException | InterruptedException e1) {
+            throw new ActionException("Failed to upload to S3.", e1);
+        }
+        progresser.done();
+
+        ActionResult result;
+        switch (upload.getState()) {
+        case Completed: result = ActionResult.SUCCEEDED; break;
+        case Canceled: result = ActionResult.CANCELED; break;
+        case Failed:
+        default: result = ActionResult.FAILED; break;
         }
         tm.shutdownNow();
-        progresser.done();
-        return new ActionOutput(ActionResult.SUCCEEDED);
+
+        return new ActionOutput(result);
     }
 }

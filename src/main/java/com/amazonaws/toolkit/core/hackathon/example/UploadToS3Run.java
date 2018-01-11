@@ -21,7 +21,7 @@ public class UploadToS3Run extends AbstractActionRun<UploadToS3Input> {
     protected UploadToS3Input createActionInput() {
         UploadToS3Input input = new UploadToS3Input(
                 new AwsScope("default", "us-east-1"),
-                createTempFile(20*1024),
+                createTempFile(10*1024*1024),
                 "zhaoxiz-aws-toolkit-core-test",
                 action.getActionInfo().getName(),
                 UploadToS3Input.EncryptionType.NONE,
@@ -35,7 +35,7 @@ public class UploadToS3Run extends AbstractActionRun<UploadToS3Input> {
             tempFile = File.createTempFile("tempfile", ".txt");
             for (int i = 0; i < size; ) {
                 String uuid = UUID.randomUUID().toString() + "\n";
-                FileUtils.writeStringToFile(tempFile, uuid, StandardCharsets.UTF_8);
+                FileUtils.writeStringToFile(tempFile, uuid, StandardCharsets.UTF_8, true);
                 i += uuid.length();
             }
 

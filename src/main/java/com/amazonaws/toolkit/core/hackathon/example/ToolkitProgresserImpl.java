@@ -22,8 +22,9 @@ public class ToolkitProgresserImpl implements ToolkitProgresser {
     @Override
     public void workedFraction(double fraction) {
         if (currentTask != null) {
-            DecimalFormat decimalFormat = new DecimalFormat(".##%");
+            DecimalFormat decimalFormat = new DecimalFormat("###.##%");
             logger.info("Task %s has %s completed\n", currentTask, decimalFormat.format(fraction));
+//            logger.info("Task %s has %.2f\\\\% completed\n", currentTask, fraction*100);
         }
     }
 
