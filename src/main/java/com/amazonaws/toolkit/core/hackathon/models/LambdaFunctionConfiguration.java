@@ -1,5 +1,6 @@
 package com.amazonaws.toolkit.core.hackathon.models;
 
+//TODO All the input pojo should be in the builder pattern.
 public class LambdaFunctionConfiguration {
     private final String functionName;
     private final String description;

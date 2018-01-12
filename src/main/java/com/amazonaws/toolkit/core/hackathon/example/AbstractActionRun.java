@@ -30,6 +30,7 @@ public abstract class AbstractActionRun<I extends ActionInput> {
             action.execute(input, context);
         } catch (ActionException e) {
             // Report error
+            throw e;
         }
         return null;
     }

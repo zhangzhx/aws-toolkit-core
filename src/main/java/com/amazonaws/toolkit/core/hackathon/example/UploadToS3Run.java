@@ -21,7 +21,7 @@ public class UploadToS3Run extends AbstractActionRun<UploadToS3Input> {
     protected UploadToS3Input createActionInput() {
         UploadToS3Input input = new UploadToS3Input(
                 new AwsScope("default", "us-east-1"),
-                createTempFile(10*1024*1024),
+                "/Users/zhaoxiz/Desktop/aws-toolkit-core",
                 "zhaoxiz-aws-toolkit-core-test",
                 action.getActionInfo().getName(),
                 UploadToS3Input.EncryptionType.NONE,
