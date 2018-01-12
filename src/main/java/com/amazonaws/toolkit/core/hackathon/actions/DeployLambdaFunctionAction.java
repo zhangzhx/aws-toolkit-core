@@ -19,6 +19,9 @@ import com.amazonaws.services.lambda.model.UpdateFunctionConfigurationRequest;
 import com.amazonaws.toolkit.core.hackathon.ActionContext;
 import com.amazonaws.toolkit.core.hackathon.ActionInfo;
 import com.amazonaws.toolkit.core.hackathon.ToolkitLogger;
+import com.amazonaws.toolkit.core.hackathon.ToolkitProgresser;
+import com.amazonaws.toolkit.core.hackathon.analytics.ToolkitEvent;
+import com.amazonaws.toolkit.core.hackathon.analytics.ui.EventPublisherProvider;
 import com.amazonaws.toolkit.core.hackathon.models.ActionException;
 import com.amazonaws.toolkit.core.hackathon.models.ActionOutput;
 import com.amazonaws.toolkit.core.hackathon.models.ActionOutput.ActionResult;
@@ -43,6 +46,8 @@ public class DeployLambdaFunctionAction extends BaseAction<DeployLambdaFunctionI
                 .build();
 
         ToolkitLogger logger = context.getLogger();
+        ToolkitEvent metrics = context.getEvent();
+        ToolkitProgresser progresser = context.getProgresser();
 
         File artifact = new File(input.getTargetArtifactLocation());
         if (!artifact.exists() || !artifact.isFile()) {
@@ -50,23 +55,33 @@ public class DeployLambdaFunctionAction extends BaseAction<DeployLambdaFunctionI
             logger.error("%s: %s", INVALID_PARAMETER_ERROR_MESSAGE, errorMessage);
             throw new ActionException(INVALID_PARAMETER_ERROR_MESSAGE, new IllegalArgumentException(errorMessage));
         }
-        if (needToUseS3Location(artifact)) {
+        boolean needToUploadToS3 = needToUseS3Location(artifact);
+        metrics.addBooleanMetric("Upload to S3", needToUploadToS3);
+        metrics.addMetric("Artifact length:", artifact.length());
+
+        if (needToUploadToS3) {
             if (input.getS3Input() == null) {
                 String errorMessage = "S3 location must be specified as the artifact zip file is too big.";
                 logger.error(errorMessage);
                 throw new ActionException(INVALID_PARAMETER_ERROR_MESSAGE, new IllegalArgumentException(errorMessage));
             }
             logger.info("The artifact is bigger than %dM, upload to S3\n", DEPLOYMENT_PACKAGE_SIZE/M);
-            ActionOutput uploadToS3Output = new UploadToS3Action().execute(input.getS3Input(), context);
+
+            //TODO move the event creation to BaseAction
+            ActionOutput uploadToS3Output = new UploadToS3Action().execute(input.getS3Input(),
+                    new ActionContext(EventPublisherProvider.INSTANCE.getEventPublisher().createEvent(ActionInfo.UPLOAD_TO_S3.getName()),
+                            logger, progresser));
             if (uploadToS3Output.getResult() != ActionResult.SUCCEEDED) {
                 return uploadToS3Output;
             }
         }
 
+        progresser.beginTask("Deploying to AWS Lambda");
         LambdaFunctionConfiguration config = input.getFunctionConfiguration();
         try {
             lambda.getFunction(new GetFunctionRequest().withFunctionName(config.getFunctionName()));
             logger.info("Updating configuration for Lambda function %s\n", config.getFunctionName());
+            metrics.addBooleanMetric("Create new function", false);
             lambda.updateFunctionConfiguration(new UpdateFunctionConfigurationRequest()
                     .withFunctionName(config.getFunctionName())
                     .withDescription(config.getDescription())
@@ -74,6 +89,8 @@ public class DeployLambdaFunctionAction extends BaseAction<DeployLambdaFunctionI
                     .withMemorySize(config.getMemorySize())
                     .withTimeout(config.getTimeout())
                     .withRole(config.getRole()));
+
+            progresser.workedFraction(0.5);
 
             UpdateFunctionCodeRequest updateCodeRequest = new UpdateFunctionCodeRequest()
                 .withFunctionName(config.getFunctionName())
@@ -93,6 +110,7 @@ public class DeployLambdaFunctionAction extends BaseAction<DeployLambdaFunctionI
             lambda.updateFunctionCode(updateCodeRequest);
         } catch (ResourceNotFoundException e) {
             // create a new function
+            metrics.addBooleanMetric("Create new function", true);
             CreateFunctionRequest createFunctionRequest = new CreateFunctionRequest()
                     .withFunctionName(config.getFunctionName())
                     .withDescription(config.getDescription())
@@ -118,7 +136,8 @@ public class DeployLambdaFunctionAction extends BaseAction<DeployLambdaFunctionI
             logger.info("Create Lambda function %s\n", config.getFunctionName());
             lambda.createFunction(createFunctionRequest);
         }
-        logger.info("Deploy Lambda Function Action is Done\n");
+        progresser.workedFraction(1);
+        progresser.done();
         return new ActionOutput(ActionResult.SUCCEEDED);
     }
 

@@ -2,7 +2,6 @@ package com.amazonaws.toolkit.core.hackathon;
 
 import java.io.Closeable;
 
-//TODO replace ILog with the real one.
 public interface ToolkitLogger extends Closeable {
 
     void info(String format, Object... params);
@@ -11,4 +10,15 @@ public interface ToolkitLogger extends Closeable {
 
     void error(String format, Object... params);
 
+    default void infoLine(String format, Object... params) {
+        info(format + "\n", params);
+    }
+
+    default void warningLine(String format, Object... params) {
+        warning(format + "\n", params);
+    }
+
+    default void errorLine(String format, Object... params) {
+        error(format + "\n", params);
+    }
 }

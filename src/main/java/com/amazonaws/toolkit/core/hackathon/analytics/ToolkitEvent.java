@@ -89,8 +89,9 @@ public abstract class ToolkitEvent<T> {
     }
 
     public static void print(ToolkitLogger logger, ToolkitEvent event) {
-        logger.error("[%tc - %s]:\n", event.eventTime, event.eventName);
-        event.attributes.forEach((k, v) -> logger.error("Attribute - [%s: %s]\n", k, v));
-        event.metrics.forEach((k, v) -> logger.error("Metric - [%s: %.2f]\n", k, v));
+        logger.infoLine("REPORT ACTION - %s", event.eventName);
+        logger.infoLine("[Attribute] Event time: %tc", event.eventTime);
+        event.attributes.forEach((k, v) -> logger.infoLine("[Attribute] %s: %s", k, v));
+        event.metrics.forEach((k, v) -> logger.infoLine("[Metric] %s: %.2f", k, v));
     }
 }

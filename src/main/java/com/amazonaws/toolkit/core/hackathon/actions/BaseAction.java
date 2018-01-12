@@ -1,9 +1,8 @@
 package com.amazonaws.toolkit.core.hackathon.actions;
 
-import java.io.IOException;
-
 import com.amazonaws.toolkit.core.hackathon.ActionContext;
 import com.amazonaws.toolkit.core.hackathon.ActionInfo;
+import com.amazonaws.toolkit.core.hackathon.ToolkitLogger;
 import com.amazonaws.toolkit.core.hackathon.analytics.ToolkitEvent;
 import com.amazonaws.toolkit.core.hackathon.models.ActionException;
 import com.amazonaws.toolkit.core.hackathon.models.ActionInput;
@@ -18,6 +17,8 @@ public abstract class BaseAction<I extends ActionInput, O extends ActionOutput, 
 
     public final O execute(I input, ActionContext context) throws E {
         ToolkitEvent metrics = context.getEvent();
+        ToolkitLogger logger = context.getLogger();
+        logger.infoLine("START ACTION - %s", actionInfo.getDisplayName());
         try {
             long startTimeMilli = System.currentTimeMillis();
             O output = doExecute(input, context);
@@ -30,13 +31,9 @@ public abstract class BaseAction<I extends ActionInput, O extends ActionOutput, 
             throw e;
         } finally {
             // TODO to be removed in the prod code
+            logger.infoLine("END ACTION - %s", actionInfo.getDisplayName());
             ToolkitEvent.print(context.getLogger(), metrics);
             metrics.record();
-            try {
-                context.getLogger().close();
-            } catch (IOException e) {
-                //TODO What to do?
-            }
         }
     }
 

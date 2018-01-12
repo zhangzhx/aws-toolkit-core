@@ -17,16 +17,16 @@ public class ToolkitLoggerImpl implements ToolkitLogger {
 
     @Override
     public void info(String format, Object... params) {
-        System.out.print(String.format("[INFO - %s] %s", name, String.format(format, params)));
+        System.out.print(String.format("[INFO] %s", String.format(format, params)));
     }
 
     @Override
     public void warning(String format, Object... params) {
-        System.out.print(String.format("[WARNING - %s] %s", name, String.format(format, params)));
+        System.out.print(String.format("[WARNING] %s", String.format(format, params)));
     }
 
     @Override
     public void error(String format, Object... params) {
-        System.err.print(String.format("[ERROR - %s] %s", name, String.format(format, params)));
+        System.err.print(String.format("[ERROR] %s", String.format(format, params)));
     }
 }
