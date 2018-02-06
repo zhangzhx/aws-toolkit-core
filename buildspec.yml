@@ -1,0 +1,9 @@
+version: 0.1
+
+phases:
+  build:
+    commands:
+      - mvn clean package
+artifacts:
+  files:
+    - target/aws-toolkit-core-0.0.1.jar
