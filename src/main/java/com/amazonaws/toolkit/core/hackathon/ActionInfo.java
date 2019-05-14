@@ -1,5 +1,6 @@
 package com.amazonaws.toolkit.core.hackathon;
 
+// Master commit 2
 public enum ActionInfo {
     UPLOAD_TO_S3("UploadToS3", "Upload to S3"),
     DEPLOY_LAMBDA_FUNCTION("DeployLambdaFunction", "Deploy Lambda function"),
