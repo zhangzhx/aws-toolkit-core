@@ -1,7 +1,5 @@
 package com.amazonaws.toolkit.core.hackathon;
 
-// Another sommed
-// Hoho
 public interface ToolkitProgresser {
 
     /**

@@ -7,7 +7,6 @@ import com.amazonaws.toolkit.core.hackathon.models.ActionInput;
  *
  * @param <I> The concrete ActionInput
  */
-// Another new comment
 public interface IActionExecutionContextProvider<I extends ActionInput> {
 
     // Create the Logger to be used by the action
