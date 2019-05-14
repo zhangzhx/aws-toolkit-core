@@ -7,7 +7,6 @@ import com.amazonaws.toolkit.core.hackathon.analytics.ToolkitEvent;
 import com.amazonaws.toolkit.core.hackathon.models.ActionException;
 import com.amazonaws.toolkit.core.hackathon.models.ActionInput;
 import com.amazonaws.toolkit.core.hackathon.models.ActionOutput;
-// Some comment
 
 public abstract class BaseAction<I extends ActionInput, O extends ActionOutput, E extends ActionException> {
     private final ActionInfo actionInfo;
