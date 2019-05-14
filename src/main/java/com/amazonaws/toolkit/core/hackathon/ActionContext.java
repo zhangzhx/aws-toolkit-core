@@ -2,6 +2,7 @@ package com.amazonaws.toolkit.core.hackathon;
 
 import com.amazonaws.toolkit.core.hackathon.analytics.ToolkitEvent;
 
+// SOme comment from Action Context
 public class ActionContext {
     private final ToolkitEvent event;
     private final ToolkitLogger logger;
