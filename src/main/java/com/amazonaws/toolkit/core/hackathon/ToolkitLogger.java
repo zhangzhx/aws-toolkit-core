@@ -2,6 +2,7 @@ package com.amazonaws.toolkit.core.hackathon;
 
 import java.io.Closeable;
 
+// Comment for Toolkit Logger
 public interface ToolkitLogger extends Closeable {
 
     void info(String format, Object... params);
